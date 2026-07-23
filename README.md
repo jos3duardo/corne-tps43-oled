@@ -37,7 +37,38 @@ keymap/      fonte do keymap — symlinkado para dentro do vial-qmk
 firmware/    binários compilados, prontos para gravar
   stock/     firmware original do fabricante (rollback conhecido-bom)
 tools/       scripts de bootloader e gravação
+case/        suporte 3D do trackpad (OpenSCAD paramétrico + STLs)
 ```
+
+## Suporte 3D do trackpad
+
+`case/tps43_holder.scad` — peça **avulsa**, não integrada ao case da Kea Workshop.
+Não existe modelo público de Corne com TPS43; este foi feito com as cotas do
+datasheet oficial.
+
+| Peça | Dimensões |
+|---|---|
+| `tps43_holder_box.stl` | 48,9 × 45,9 × 6,0 mm |
+| `tps43_holder_lid.stl` | 45,3 × 42,3 × 0,6 mm |
+
+**Montagem — a ordem importa.** O adesivo de fábrica está na *face sensível* do pad.
+Cole essa face na parte **de baixo da tampa**: a tampa é o overlay, e é nela que o
+dedo toca. Depois encaixe o conjunto na caixa, com o cabo saindo pelo rasgo lateral.
+
+Regenerar após mexer nos parâmetros:
+
+```sh
+cd case
+openscad -D 'part="box"' -o tps43_holder_box.stl tps43_holder.scad
+openscad -D 'part="lid"' -o tps43_holder_lid.stl tps43_holder.scad
+```
+
+Parâmetros úteis: `tol` (folga do pad), `lid_t` (espessura do overlay — o datasheet
+exige **0,2 a 1,2 mm**, e há um `assert` que barra valores fora disso), `box_h`
+(altura do corpo), `cable_w` (rasgo do cabo).
+
+⚠️ Nada condutivo pode entrar na camada do overlay — sem tinta metálica, sem fita
+de alumínio, sem chapa encostando na face sensível.
 
 ## Como compilar
 
