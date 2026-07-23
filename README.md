@@ -77,7 +77,7 @@ Com `open_bottom = false` a peça ganha piso, furo de passagem com chanfro
 
 ### Peça fundida com a tampa do fabricante
 
-`tps43_holder_on_cover_right.stl` / `.stp` — **48,90 × 61,35 × 9,05 mm**, peça única.
+`tps43_holder_on_cover_right.stl` / `.stp` — **48,90 × 61,35 × 6,00 mm**, peça única.
 
 É o suporte unido à tampa *No Display Cover Right* original da Kea Workshop. Como a
 tampa vem do STEP do fabricante, a interface de fixação é a original, não uma

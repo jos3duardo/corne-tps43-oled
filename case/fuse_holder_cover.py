@@ -32,6 +32,15 @@ COVER_AT = "xmax"
 # Passagem dos fios atraves da tampa, ate o RP2040 logo abaixo.
 WIRE_SLOT = (10.0, 20.0)   # largura x comprimento, mm
 
+# DROP_HOLDER: assenta a base do aro no MESMO plano da base da tampa, em vez
+# de no topo dela. Sem isso, o balanco do aro (~30 mm que passam da largura da
+# tampa) fica flutuando a 3 mm da mesa e o fatiador poe suporte embaixo. Com
+# isso, toda a face inferior toca a mesa — imprime sem suporte. A regiao
+# sobreposta com a tampa se funde num solido so.
+# ATENCAO: baixar preenche o espaco ABAIXO do balanco. Confirme que sobra
+# folga sobre os switches do teclado ali; se nao sobrar, a saia vai colidir.
+DROP_HOLDER = True
+
 cover = Part.Shape()
 cover.read(COVER)
 cb = cover.BoundBox
@@ -53,7 +62,8 @@ else:
     tx = cb.XMin + cb.XLength / 2 - hb.XLength / 2 - hb.XMin
 
 ty = cb.YMin + CENTER_Y_REL - hb.YLength / 2 - hb.YMin
-tz = cb.ZMax - hb.ZMin
+# base do aro coplanar com a base da tampa (DROP) ou assentada no topo dela
+tz = (cb.ZMin - hb.ZMin) if DROP_HOLDER else (cb.ZMax - hb.ZMin)
 holder.translate(Vector(tx, ty, tz))
 
 hb2 = holder.BoundBox
