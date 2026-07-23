@@ -41,6 +41,14 @@ WIRE_SLOT = (10.0, 20.0)   # largura x comprimento, mm
 # folga sobre os switches do teclado ali; se nao sobrar, a saia vai colidir.
 DROP_HOLDER = True
 
+# TRIM_COVER: descarta o corpo da tampa que fica sob o aro (redundante, ja
+# coberto pelo modelo) e mantem apenas a ABA de fixacao — o extremo com os
+# dois furos que prende no RP2040. A peca final vira: aro + aba de fixacao.
+# OVERLAP_WELD e quanto da tampa continua entrando sob o aro, para a solda
+# das duas partes ser volumetrica e nao so encostada.
+TRIM_COVER = True
+OVERLAP_WELD = 3.0   # mm
+
 cover = Part.Shape()
 cover.read(COVER)
 cb = cover.BoundBox
@@ -72,19 +80,35 @@ print(f"alinhamento '{COVER_AT}': suporte X {hb2.XMin:.2f}..{hb2.XMax:.2f}"
 print(f"  balanco: {cb.XMin - hb2.XMin:+.2f} mm em -X, "
       f"{hb2.XMax - cb.XMax:+.2f} mm em +X")
 
-fused = cover.fuse(holder).removeSplitter()
+# Opcional: reduz a tampa a apenas a aba de fixacao. Remove tudo com Y acima
+# da linha de corte; a aba (Y baixo, onde estao os furos) e um refugo de
+# OVERLAP_WELD mm sob o aro permanecem, garantindo a solda.
+if TRIM_COVER:
+    y_cut = hb2.YMin + OVERLAP_WELD
+    holes_y = [-11.68, -18.07]   # medidos em inspect_cover.py
+    assert all(y < y_cut for y in holes_y), \
+        "a linha de corte cairia sobre os furos de fixacao"
+    prism = Part.makeBox(
+        cb.XLength + 2, (cb.YMax - y_cut) + 2, cb.ZLength + 2,
+        Vector(cb.XMin - 1, y_cut, cb.ZMin - 1),
+    )
+    cover_use = cover.cut(prism).removeSplitter()
+else:
+    cover_use = cover
 
-# Fura a tampa para os fios descerem ate o controlador. Tem que ficar dentro
-# do footprint da TAMPA (18,97 mm de largura), nao do suporte: alinhado numa
-# borda, o centro do suporte cai fora da tampa e o corte nao remove nada.
-cx = cb.XMin + cb.XLength / 2
-cy = cb.YMin + CENTER_Y_REL
-assert WIRE_SLOT[0] < cb.XLength, "rasgo mais largo que a tampa"
-slot = Part.makeBox(
-    WIRE_SLOT[0], WIRE_SLOT[1], cb.ZLength + 2,
-    Vector(cx - WIRE_SLOT[0] / 2, cy - WIRE_SLOT[1] / 2, cb.ZMin - 1),
-)
-fused = fused.cut(slot).removeSplitter()
+fused = cover_use.fuse(holder).removeSplitter()
+
+# A passagem de fios pela tampa so faz sentido se a tampa inteira ficou. Com a
+# tampa recortada, o fundo do aro ja e aberto e os fios saem por ali direto.
+if not TRIM_COVER:
+    cx = cb.XMin + cb.XLength / 2
+    cy = cb.YMin + CENTER_Y_REL
+    assert WIRE_SLOT[0] < cb.XLength, "rasgo mais largo que a tampa"
+    slot = Part.makeBox(
+        WIRE_SLOT[0], WIRE_SLOT[1], cb.ZLength + 2,
+        Vector(cx - WIRE_SLOT[0] / 2, cy - WIRE_SLOT[1] / 2, cb.ZMin - 1),
+    )
+    fused = fused.cut(slot).removeSplitter()
 
 fb = fused.BoundBox
 print(f"fundido: {fb.XLength:.2f} x {fb.YLength:.2f} x {fb.ZLength:.2f} mm"
