@@ -45,6 +45,16 @@ base_t    = 1.2; // piso — ignorado quando open_bottom = true
 lid_t     = 0.6; // tampa = overlay. MANTENHA entre 0.2 e 1.2
 lid_ledge = 1.0; // largura do ressalto onde a tampa apoia
 
+/* [Retencao do pad] */
+// Travas que avancam para dentro da cavidade e seguram o pad POR BAIXO,
+// prensando-o contra a tampa. Sem elas o pad fica preso so pelo adesivo.
+// Ficam posicionadas em relacao ao TOPO, entao valem para qualquer box_h.
+tabs     = true;
+tab_t    = 1.0;  // espessura (quanto sobe)
+tab_in   = 1.5;  // quanto avanca para dentro
+tab_len  = 8.0;  // comprimento de cada trava
+tab_slack= 0.15; // folga vertical, para nao esmagar o PCB
+
 /* [Impressao] */
 tol     = 0.35;  // folga por lado; aumente se ficar apertado
 lid_gap = 0.20;  // folga extra so da tampa, para ela entrar sem forcar
@@ -90,11 +100,36 @@ module rounded_cube(x, y, z, r) {
         translate([dx, dy, 0]) cylinder(r = r, h = z);
 }
 
+// Z onde a face de baixo do pad fica, medido a partir do topo.
+pad_h     = tp_pcb + tp_adh;
+pad_bot_z = box_h - lid_t - pad_h - tab_slack;
+
+// Travas de retencao: quatro linguetas apontando para dentro da cavidade,
+// logo abaixo do pad. O espaco entre elas fica livre para os fios.
+module retention_tabs() {
+    px = wall_t + lid_ledge;          // canto da cavidade
+    py = wall_t + lid_ledge;
+    translate([0, 0, pad_bot_z - tab_t]) {
+        // duas nas laterais longas
+        for (y = [py + (pocket_d - tab_len)/2])
+            for (x = [px, px + pocket_w - tab_in])
+                translate([x, y, 0]) cube([tab_in, tab_len, tab_t]);
+        // duas nas laterais curtas
+        for (x = [px + (pocket_w - tab_len)/2])
+            for (y = [py, py + pocket_d - tab_in])
+                translate([x, y, 0]) cube([tab_len, tab_in, tab_t]);
+    }
+}
+
 module box() {
     assert(cavity_h >= tp_pcb + tp_adh,
            "cavidade menor que o pad: aumente box_h");
     assert(lid_t >= 0.2 && lid_t <= 1.2,
            "lid_t fora da faixa de overlay do datasheet (0,2 a 1,2 mm)");
+    assert(!tabs || pad_bot_z - tab_t >= 0,
+           "travas ficariam abaixo da peca: aumente box_h");
+
+    if (tabs) retention_tabs();
 
     difference() {
         rounded_cube(box_w, box_d, box_h, box_r);
