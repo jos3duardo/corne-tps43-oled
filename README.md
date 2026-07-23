@@ -75,7 +75,47 @@ cobre o RP2040, que passa a fazer as vezes de fundo.
 Com `open_bottom = false` a peça ganha piso, furo de passagem com chanfro
 (`wire_d`, `wire_x`, `wire_edge`) e, opcionalmente, os furos de fixação.
 
-### Fixação sobre o controlador — em aberto
+### Peça fundida com a tampa do fabricante
+
+`tps43_holder_on_cover_right.stl` / `.stp` — **48,90 × 61,35 × 9,05 mm**, peça única.
+
+É o suporte unido à tampa *No Display Cover Right* original da Kea Workshop. Como a
+tampa vem do STEP do fabricante, a interface de fixação é a original, não uma
+reprodução: os dois furos **Ø2,30 mm** ficam preservados nas coordenadas de fábrica,
+então parafusa com os mesmos parafusos, sem furar nada.
+
+Inclui uma passagem de 10 × 20 mm atravessando a tampa, para os fios descerem até o
+RP2040. O suporte fica centrado onde a *OLED Cover* põe a janela do display
+(rel 8,47 × 38,40), que é a área livre da peça.
+
+Regenerar após mexer no suporte:
+
+```sh
+flatpak run --command=freecadcmd org.freecad.FreeCAD fuse_holder_cover.py
+```
+
+Ajuste `CENTER_REL` (posição sobre a tampa) e `WIRE_SLOT` (passagem dos fios) no
+topo do script.
+
+### Cotas da tampa — medidas com FreeCAD
+
+| Medida | No Display | OLED Cover |
+|---|---|---|
+| Footprint | 18,97 × 58,95 mm | igual |
+| Altura | 3,05 mm | 4,05 mm |
+| Furos | 2 × Ø2,30 mm | iguais |
+| Posição dos furos (do canto) | (2,27 · 2,68) e (16,70 · 9,07) | iguais |
+| Janela do display | — | 12,50 × 39,80 em (8,47 · 38,40) |
+
+Distância entre centros dos furos: **15,78 mm**.
+
+⚠️ O acrílico do OLED usa fixação **diferente** (Ø2,82 mm, 18,43 mm entre centros).
+Não confunda: a tabela acima vale para as tampas impressas.
+
+O STEP exporta tudo como B-spline, então detectar círculo por raio não funciona.
+`inspect_cover.py` contorna isso fatiando o sólido e lendo os contornos internos.
+
+### Ressalvas da fixação
 
 A ideia é prender o suporte onde hoje fica a tampa que cobre o RP2040. Cotas do
 **acrílico do OLED** da Kea Workshop, extraídas do SVG oficial:
