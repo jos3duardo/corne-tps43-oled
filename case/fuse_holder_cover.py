@@ -15,9 +15,19 @@ COVER = os.path.join(BASE, "ref_no_display_cover_right.stp")
 HOLDER = os.path.join(BASE, "tps43_holder_box.stl")
 OUT = os.path.join(BASE, "tps43_holder_on_cover_right")
 
-# Onde centrar o suporte sobre a tampa. O padrao e o centro da janela do
-# OLED (medido na OLED Cover: rel 8,47 x 38,40), que e a area livre da peca.
-CENTER_REL = (8.47, 38.40)
+# Posicao do suporte sobre a tampa, no eixo Y (ao longo do comprimento).
+# O padrao e a altura da janela do OLED (rel 38,40), que e a area livre.
+CENTER_Y_REL = 38.40
+
+# Alinhamento no eixo X. A tampa tem so 18,97 mm de largura e o suporte tem
+# 48,90 — entao a tampa nunca cobre a peca toda, e a questao e para que lado
+# sobra o balanco.
+#   "xmax"   -> tampa encostada na borda +X do suporte (sobra para -X)
+#   "xmin"   -> tampa encostada na borda -X do suporte (sobra para +X)
+#   "center" -> tampa no meio (sobra dos dois lados)
+# ATENCAO: +X do STEP nao necessariamente e a sua "direita" visual. Se sair
+# para o lado errado, troque "xmax" por "xmin".
+COVER_AT = "xmax"
 
 # Passagem dos fios atraves da tampa, ate o RP2040 logo abaixo.
 WIRE_SLOT = (10.0, 20.0)   # largura x comprimento, mm
@@ -34,17 +44,32 @@ holder = Part.Solid(shell).removeSplitter()
 hb = holder.BoundBox
 print(f"suporte: {hb.XLength:.2f} x {hb.YLength:.2f} x {hb.ZLength:.2f} mm")
 
-# posiciona: centrado no ponto escolhido, assentado no topo da tampa
-tx = cb.XMin + CENTER_REL[0] - hb.XLength / 2 - hb.XMin
-ty = cb.YMin + CENTER_REL[1] - hb.YLength / 2 - hb.YMin
+# posiciona: assentado no topo da tampa, alinhado conforme COVER_AT
+if COVER_AT == "xmax":
+    tx = cb.XMax - hb.XMax                      # bordas +X coincidem
+elif COVER_AT == "xmin":
+    tx = cb.XMin - hb.XMin                      # bordas -X coincidem
+else:
+    tx = cb.XMin + cb.XLength / 2 - hb.XLength / 2 - hb.XMin
+
+ty = cb.YMin + CENTER_Y_REL - hb.YLength / 2 - hb.YMin
 tz = cb.ZMax - hb.ZMin
 holder.translate(Vector(tx, ty, tz))
 
+hb2 = holder.BoundBox
+print(f"alinhamento '{COVER_AT}': suporte X {hb2.XMin:.2f}..{hb2.XMax:.2f}"
+      f" | tampa X {cb.XMin:.2f}..{cb.XMax:.2f}")
+print(f"  balanco: {cb.XMin - hb2.XMin:+.2f} mm em -X, "
+      f"{hb2.XMax - cb.XMax:+.2f} mm em +X")
+
 fused = cover.fuse(holder).removeSplitter()
 
-# fura a tampa para os fios descerem ate o controlador
-cx = cb.XMin + CENTER_REL[0]
-cy = cb.YMin + CENTER_REL[1]
+# Fura a tampa para os fios descerem ate o controlador. Tem que ficar dentro
+# do footprint da TAMPA (18,97 mm de largura), nao do suporte: alinhado numa
+# borda, o centro do suporte cai fora da tampa e o corte nao remove nada.
+cx = cb.XMin + cb.XLength / 2
+cy = cb.YMin + CENTER_Y_REL
+assert WIRE_SLOT[0] < cb.XLength, "rasgo mais largo que a tampa"
 slot = Part.makeBox(
     WIRE_SLOT[0], WIRE_SLOT[1], cb.ZLength + 2,
     Vector(cx - WIRE_SLOT[0] / 2, cy - WIRE_SLOT[1] / 2, cb.ZMin - 1),
