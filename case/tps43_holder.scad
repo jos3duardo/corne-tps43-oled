@@ -43,8 +43,21 @@ lid_ledge = 1.0; // largura do ressalto onde a tampa apoia
 tol     = 0.35;  // folga por lado; aumente se ficar apertado
 lid_gap = 0.20;  // folga extra so da tampa, para ela entrar sem forcar
 
-/* [Saida do cabo] */
-cable_w = 12.0;  // largura do rasgo (FPC da TPS43)
+/* [Saida dos fios] */
+// Saida pelo FUNDO, nao pela lateral: a montagem usa fios soltos
+// (SDA, SCL, 3V3, GND), nao o cabo flat.
+wire_d    = 5.0;  // diametro do furo de passagem
+wire_x    = 0.5;  // posicao no eixo X, como fracao da largura (0..1)
+wire_edge = 8.0;  // distancia do centro do furo ate a borda Y mais proxima
+
+/* [Fixacao — OPCIONAL, NAO VERIFICADO] */
+// Furos com a cota da tampa ACRILICA do OLED da Kea Workshop
+// (Ø2,82 mm, 18,43 mm entre centros), extraidas do SVG oficial.
+// ATENCAO: NAO foi confirmado que a tampa "No Display" usa a mesma
+// interface — ela e uma casca 3D bem maior. Meca a sua antes de usar.
+mount_holes = false;
+mount_d     = 2.82;
+mount_pitch = 18.43;
 
 /* [Render] */
 part = "both";   // "box", "lid" ou "both"
@@ -87,9 +100,19 @@ module box() {
         translate([wall_t, wall_t, box_h - lid_t])
             rounded_cube(recess_w, recess_d, lid_t + 0.1, recess_r);
 
-        // rasgo lateral para o cabo sair
-        translate([box_w - wall_t - 0.1, (box_d - cable_w)/2, base_t])
-            cube([wall_t + 0.2, cable_w, cavity_h]);
+        // passagem dos fios pelo FUNDO
+        translate([box_w * wire_x, wire_edge, -0.1])
+            cylinder(d = wire_d, h = base_t + 0.2);
+
+        // chanfro na saida, para os fios nao dobrarem em quina viva
+        translate([box_w * wire_x, wire_edge, -0.01])
+            cylinder(d1 = wire_d + 1.6, d2 = wire_d, h = 0.8);
+
+        // furos de fixacao, se habilitados
+        if (mount_holes)
+            for (dx = [-mount_pitch/2, mount_pitch/2])
+                translate([box_w/2 + dx, box_d - wire_edge, -0.1])
+                    cylinder(d = mount_d, h = base_t + 0.2);
     }
 }
 

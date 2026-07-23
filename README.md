@@ -65,7 +65,39 @@ openscad -D 'part="lid"' -o tps43_holder_lid.stl tps43_holder.scad
 
 Parâmetros úteis: `tol` (folga do pad), `lid_t` (espessura do overlay — o datasheet
 exige **0,2 a 1,2 mm**, e há um `assert` que barra valores fora disso), `box_h`
-(altura do corpo), `cable_w` (rasgo do cabo).
+(altura do corpo), `wire_d`/`wire_x`/`wire_edge` (passagem dos fios pelo fundo).
+
+Os fios saem pelo **fundo**, não pela lateral — a montagem usa condutores soltos
+(SDA, SCL, 3V3, GND), não o cabo flat que acompanha o módulo.
+
+### Fixação sobre o controlador — em aberto
+
+A ideia é prender o suporte onde hoje fica a tampa que cobre o RP2040. Cotas do
+**acrílico do OLED** da Kea Workshop, extraídas do SVG oficial:
+
+| Medida | Valor |
+|---|---|
+| Contorno | 22,39 × 71,42 mm |
+| Furos | Ø2,82 mm (folga M2.5) |
+| Distância entre centros | 18,43 mm |
+| Posição (do canto) | A(19,62 · 61,02) · B(2,77 · 68,48) |
+
+⚠️ **Isso é da peça de acrílico, não da tampa "No Display".** O STEP da No Display
+tem caixa envolvente de 86,26 × 59,22 × 11,63 mm — é uma casca 3D bem maior, e não
+foi confirmado que use a mesma interface de fixação. Meça a sua antes de furar.
+
+Dois problemas conhecidos dessa fixação:
+
+1. **A TPS43 tem 43 mm de largura; a área da tampa, ~22 mm.** Com o suporte, são
+   48,9 mm sobre uma base de 22 — cerca de 13 mm de balanço por lado, avançando
+   sobre os switches.
+2. **Os dois furos ficam agrupados numa ponta** (18,43 mm entre si, numa peça de
+   71 mm). Segura uma tampa leve, mas um conjunto trackpad+suporte vira alavanca e
+   tende a flexionar justamente ao toque.
+
+Provável necessidade de apoio adicional além dos parafusos. O parâmetro
+`mount_holes` (padrão `false`) cria os dois furos com essas cotas, para quando a
+fixação estiver definida.
 
 ⚠️ Nada condutivo pode entrar na camada do overlay — sem tinta metálica, sem fita
 de alumínio, sem chapa encostando na face sensível.
