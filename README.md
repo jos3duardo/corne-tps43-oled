@@ -49,7 +49,7 @@ sem modificações:
 
 ```sh
 ln -sfn ~/projects/corne-firmware/keymap \
-        ~/projects/vial-qmk/keyboards/crkbd/keymaps/jsouza
+        ~/projects/vial-qmk/keyboards/crkbd/keymaps/jos3duardo
 ```
 
 Compilar:
@@ -57,13 +57,13 @@ Compilar:
 ```sh
 cd ~/projects/vial-qmk
 export PATH="$PWD/.venv/bin:$PATH"
-make crkbd/rev1:jsouza:uf2-split-left     # metade esquerda
-make crkbd/rev1:jsouza:uf2-split-right    # metade direita
+make crkbd/rev1:jos3duardo:uf2-split-left     # metade esquerda
+make crkbd/rev1:jos3duardo:uf2-split-right    # metade direita
 ```
 
 Os alvos `uf2-split-*` **tentam gravar** depois de compilar e ficam pendurados se
 não houver placa em BOOTSEL. Não tem problema: o `.uf2` já foi gerado antes disso,
-em `crkbd_rev1_vial.uf2` na raiz do vial-qmk. Interrompa e copie o arquivo.
+em `crkbd_rev1_jos3duardo.uf2` na raiz do vial-qmk. Interrompa e copie o arquivo.
 
 ## Como gravar
 
