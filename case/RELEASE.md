@@ -108,11 +108,20 @@ script: `COVER_AT` (which side the tab sits), `TRIM_COVER`, `DROP_HOLDER`.
 
 ---
 
+## This project
+
+Firmware, build notes, OpenSCAD/FreeCAD sources and STLs:
+**https://github.com/jos3duardo/corne-tps43-oled**
+
 ## Credits & license
 
 The mounting tab is **derived from the Corne V4 Pro Micro Edition** cover by
 **Kea Workshop (klouderone)**:
 https://github.com/klouderone/CorneV4ProMicroEdition
 
-Please check and respect that project's original license before
-redistributing or selling this derivative.
+That repository is licensed under **CC BY 4.0** (`LICENSE_CC.txt`) and **MIT**
+(`LICENSE_MIT.txt`, © 2023 foostan for the original Corne). Both are permissive
+and allow commercial use and modification, requiring only **attribution**.
+
+This derivative is shared under the same terms — attribute Kea Workshop and
+foostan if you redistribute or sell it.
