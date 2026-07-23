@@ -67,8 +67,13 @@ Parâmetros úteis: `tol` (folga do pad), `lid_t` (espessura do overlay — o da
 exige **0,2 a 1,2 mm**, e há um `assert` que barra valores fora disso), `box_h`
 (altura do corpo), `wire_d`/`wire_x`/`wire_edge` (passagem dos fios pelo fundo).
 
-Os fios saem pelo **fundo**, não pela lateral — a montagem usa condutores soltos
-(SDA, SCL, 3V3, GND), não o cabo flat que acompanha o módulo.
+**`open_bottom = true` (padrão): a peça é um aro, sem piso.** O pad fica pendurado
+pela tampa — à qual está colado — e os fios (SDA, SCL, 3V3, GND, soltos, não o cabo
+flat) saem direto pela abertura inferior. A ideia é colar esse aro sobre a tampa que
+cobre o RP2040, que passa a fazer as vezes de fundo.
+
+Com `open_bottom = false` a peça ganha piso, furo de passagem com chanfro
+(`wire_d`, `wire_x`, `wire_edge`) e, opcionalmente, os furos de fixação.
 
 ### Fixação sobre o controlador — em aberto
 

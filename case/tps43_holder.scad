@@ -33,9 +33,15 @@ tp_adh = 0.13;   // adesivo de fabrica
 tp_r   = 2.5;    // raio dos cantos
 
 /* [Corpo] */
-box_h     = 6.0; // altura total. Da corpo a peca e espaco para o cabo
+// open_bottom = true deixa a peca sem piso, como um aro: o pad fica
+// pendurado pela tampa (a qual ele esta colado) e os fios saem direto pela
+// abertura inferior. E a forma pensada para colar sobre a tampa do RP2040,
+// que passa a fazer as vezes de fundo.
+open_bottom = true;
+
+box_h     = 6.0; // altura total
 wall_t    = 1.6; // parede lateral
-base_t    = 1.2; // piso
+base_t    = 1.2; // piso — ignorado quando open_bottom = true
 lid_t     = 0.6; // tampa = overlay. MANTENHA entre 0.2 e 1.2
 lid_ledge = 1.0; // largura do ressalto onde a tampa apoia
 
@@ -76,7 +82,8 @@ box_w = recess_w + 2*wall_t;
 box_d = recess_d + 2*wall_t;
 box_r = recess_r + wall_t;
 
-cavity_h = box_h - lid_t - base_t; // espaco util interno
+floor_t  = open_bottom ? 0 : base_t;
+cavity_h = box_h - lid_t - floor_t; // espaco util interno
 
 module rounded_cube(x, y, z, r) {
     hull() for (dx = [r, x-r], dy = [r, y-r])
@@ -92,24 +99,25 @@ module box() {
     difference() {
         rounded_cube(box_w, box_d, box_h, box_r);
 
-        // cavidade interna: abriga o pad e sobra folga para o cabo
-        translate([wall_t + lid_ledge, wall_t + lid_ledge, base_t])
-            rounded_cube(pocket_w, pocket_d, cavity_h, pocket_r);
+        // cavidade interna: abriga o pad; sem piso, atravessa a peca toda
+        translate([wall_t + lid_ledge, wall_t + lid_ledge, floor_t - 0.1])
+            rounded_cube(pocket_w, pocket_d, cavity_h + 0.2, pocket_r);
 
         // rebaixo da tampa, aberto no topo
         translate([wall_t, wall_t, box_h - lid_t])
             rounded_cube(recess_w, recess_d, lid_t + 0.1, recess_r);
 
-        // passagem dos fios pelo FUNDO
-        translate([box_w * wire_x, wire_edge, -0.1])
-            cylinder(d = wire_d, h = base_t + 0.2);
+        // Com piso, os fios precisam de furo e chanfro. Sem piso, saem
+        // pela propria abertura inferior.
+        if (!open_bottom) {
+            translate([box_w * wire_x, wire_edge, -0.1])
+                cylinder(d = wire_d, h = base_t + 0.2);
+            translate([box_w * wire_x, wire_edge, -0.01])
+                cylinder(d1 = wire_d + 1.6, d2 = wire_d, h = 0.8);
+        }
 
-        // chanfro na saida, para os fios nao dobrarem em quina viva
-        translate([box_w * wire_x, wire_edge, -0.01])
-            cylinder(d1 = wire_d + 1.6, d2 = wire_d, h = 0.8);
-
-        // furos de fixacao, se habilitados
-        if (mount_holes)
+        // furos de fixacao, se habilitados (so fazem sentido com piso)
+        if (mount_holes && !open_bottom)
             for (dx = [-mount_pitch/2, mount_pitch/2])
                 translate([box_w/2 + dx, box_d - wire_edge, -0.1])
                     cylinder(d = mount_d, h = base_t + 0.2);
